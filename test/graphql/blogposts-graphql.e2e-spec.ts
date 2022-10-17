@@ -3,6 +3,31 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../../src/app.module';
 
+async function getAllBlogPosts(app: INestApplication) {
+  const query = `query{
+      blogposts {title, content}
+    }`;
+  const { body } = await request(app.getHttpServer())
+    .post('/graphql')
+    .send({
+      query: query,
+    })
+    .expect(200);
+  return body.data.blogposts;
+}
+
+async function createBlogPost(app: INestApplication, { title, content }) {
+  const creationMutation = `mutation {
+      blogpost(title: "${title}", content: "${content}") {title, content}
+    }`;
+  await request(app.getHttpServer())
+    .post('/graphql')
+    .send({
+      query: creationMutation,
+    })
+    .expect(200);
+}
+
 describe('Blog Posts (graphql e2e)', () => {
   let app: INestApplication;
 
@@ -16,34 +41,18 @@ describe('Blog Posts (graphql e2e)', () => {
   });
 
   it('returns no posts when we dont have any', async () => {
-    const query = `query{
-      blogposts {title, content}
-    }`;
-    const { body } = await request(app.getHttpServer()).post('/graphql').send({
-      query: query,
-    });
-    expect(body.data.blogposts).toEqual([]);
+    const posts = await getAllBlogPosts(app);
+    expect(posts).toEqual([]);
   });
 
   it('can post a blogpost and then see that its in the list', async () => {
-    // Create the post
-    const creationMutation = `mutation {
-      blogpost(title: "First post", content: "welcome to my blog") {title, content}
-    }`;
-    await request(app.getHttpServer()).post('/graphql').send({
-      query: creationMutation,
-    });
+    const post = {
+      title: 'My first post',
+      content: 'welcome to the blog',
+    };
 
-    // Check that the post is found in the list
-    const query = `query{
-      blogposts {title, content}
-    }`;
-    const { body } = await request(app.getHttpServer()).post('/graphql').send({
-      query: query,
-    });
-    expect(body.data.blogposts).toContainEqual({
-      title: 'First post',
-      content: 'welcome to my blog',
-    });
+    await createBlogPost(app, post);
+    const posts = await getAllBlogPosts(app);
+    expect(posts).toContainEqual(post);
   });
 });
