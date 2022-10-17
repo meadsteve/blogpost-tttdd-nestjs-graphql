@@ -1,0 +1,12 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type BlogPost {
+  title: String!
+  content: String!
+}
+
+type Query {
+  blogposts: [BlogPost!]!
+}
