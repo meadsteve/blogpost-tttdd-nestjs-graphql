@@ -24,4 +24,26 @@ describe('Blog Posts (graphql e2e)', () => {
     });
     expect(body.data.blogposts).toEqual([]);
   });
+
+  it('can post a blogpost and then see that its in the list', async () => {
+    // Create the post
+    const creationMutation = `mutation {
+      blogpost(title: "First post", content: "welcome to my blog") {title, content}
+    }`;
+    await request(app.getHttpServer()).post('/graphql').send({
+      query: creationMutation,
+    });
+
+    // Check that the post is found in the list
+    const query = `query{
+      blogposts {title, content}
+    }`;
+    const { body } = await request(app.getHttpServer()).post('/graphql').send({
+      query: query,
+    });
+    expect(body.data.blogposts).toContainEqual({
+      title: 'First post',
+      content: 'welcome to my blog',
+    });
+  });
 });

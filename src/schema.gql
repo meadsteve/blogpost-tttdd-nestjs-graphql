@@ -10,3 +10,7 @@ type BlogPost {
 type Query {
   blogposts: [BlogPost!]!
 }
+
+type Mutation {
+  blogpost(title: String!, content: String!): BlogPost!
+}
