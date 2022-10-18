@@ -3,12 +3,14 @@
 # ------------------------------------------------------
 
 type BlogPost {
+  id: ID!
   title: String!
   content: String!
 }
 
 type Query {
   blogposts: [BlogPost!]!
+  blogpost(id: String!): BlogPost!
 }
 
 type Mutation {

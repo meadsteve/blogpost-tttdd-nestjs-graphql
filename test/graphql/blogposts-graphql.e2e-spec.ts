@@ -18,14 +18,15 @@ async function getAllBlogPosts(app: INestApplication) {
 
 async function createBlogPost(app: INestApplication, { title, content }) {
   const creationMutation = `mutation {
-      blogpost(title: "${title}", content: "${content}") {title, content}
+      blogpost(title: "${title}", content: "${content}") {id}
     }`;
-  await request(app.getHttpServer())
+  const { body } = await request(app.getHttpServer())
     .post('/graphql')
     .send({
       query: creationMutation,
     })
     .expect(200);
+  return body.data.blogpost;
 }
 
 describe('Blog Posts (graphql e2e)', () => {
@@ -54,5 +55,26 @@ describe('Blog Posts (graphql e2e)', () => {
     await createBlogPost(app, post);
     const posts = await getAllBlogPosts(app);
     expect(posts).toContainEqual(post);
+  });
+
+  it('individual blogposts can be retrieved by an auto generated id.', async () => {
+    const post = {
+      title: 'My first post',
+      content: 'welcome to the blog',
+    };
+
+    const { id } = await createBlogPost(app, post);
+
+    const query = `query{
+      blogpost(id: "${id}") {title, content}
+    }`;
+    const { body } = await request(app.getHttpServer())
+      .post('/graphql')
+      .send({
+        query: query,
+      })
+      .expect(200);
+
+    expect(body.data.blogpost).toEqual(post);
   });
 });
