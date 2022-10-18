@@ -1,7 +1,13 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Info, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { BlogPost } from './models/blogpost.model';
 import { Inject, NotImplementedException } from '@nestjs/common';
 import { BlogpostStorage } from './storage/blogposts.storage';
+
+function requestedGraphqlFields(info: any): string[] {
+  return info.fieldNodes[0].selectionSet.selections.map(
+    (item) => item.name.value,
+  );
+}
 
 @Resolver((of) => BlogPost)
 export class BlogpostsResolver {
@@ -13,7 +19,11 @@ export class BlogpostsResolver {
   }
 
   @Query((returns) => BlogPost, { nullable: true })
-  async blogpost(@Args('id') id: string): Promise<BlogPost | undefined> {
+  async blogpost(
+    @Args('id') id: string,
+    @Info() info: any,
+  ): Promise<BlogPost | undefined> {
+    const fields = requestedGraphqlFields(info);
     return this.storage.getPostById(id);
   }
 
