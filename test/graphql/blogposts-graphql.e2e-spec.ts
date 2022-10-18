@@ -39,7 +39,7 @@ async function getBlogPostById(app: INestApplication, id: string) {
       query: query,
     })
     .expect(200);
-  return body.data.blogpost;
+  return body?.data.blogpost;
 }
 
 describe('Blog Posts (graphql e2e)', () => {
@@ -80,5 +80,11 @@ describe('Blog Posts (graphql e2e)', () => {
     const post = await getBlogPostById(app, id);
 
     expect(post).toEqual(postContent);
+  });
+
+  it('making up an id and trying to retrieve that id returns nullish.', async () => {
+    const post = await getBlogPostById(app, 'not-a-post');
+
+    expect(post).toBeNull();
   });
 });

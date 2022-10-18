@@ -12,7 +12,7 @@ export class BlogpostsResolver {
     return this.storage.getAllPosts();
   }
 
-  @Query((returns) => BlogPost)
+  @Query((returns) => BlogPost, { nullable: true })
   async blogpost(@Args('id') id: string): Promise<BlogPost | undefined> {
     return this.storage.getPostById(id);
   }
