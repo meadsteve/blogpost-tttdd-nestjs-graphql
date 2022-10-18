@@ -1,5 +1,5 @@
 # TTTDD - Types then Test Driven Development
-Repo for the code behind this blog post: https://blog.meadsteve.dev/programming/2022/10/13/tttdd/
+Repo for the code behind this blog post: https://blog.meadsteve.dev/programming/2022/10/18/tttdd/
 
 ## Using
 
