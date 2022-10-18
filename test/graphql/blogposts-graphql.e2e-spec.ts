@@ -29,6 +29,19 @@ async function createBlogPost(app: INestApplication, { title, content }) {
   return body.data.blogpost;
 }
 
+async function getBlogPostById(app: INestApplication, id: string) {
+  const query = `query{
+      blogpost(id: "${id}") {title, content}
+    }`;
+  const { body } = await request(app.getHttpServer())
+    .post('/graphql')
+    .send({
+      query: query,
+    })
+    .expect(200);
+  return body.data.blogpost;
+}
+
 describe('Blog Posts (graphql e2e)', () => {
   let app: INestApplication;
 
@@ -58,23 +71,14 @@ describe('Blog Posts (graphql e2e)', () => {
   });
 
   it('individual blogposts can be retrieved by an auto generated id.', async () => {
-    const post = {
+    const postContent = {
       title: 'My first post',
       content: 'welcome to the blog',
     };
 
-    const { id } = await createBlogPost(app, post);
+    const { id } = await createBlogPost(app, postContent);
+    const post = await getBlogPostById(app, id);
 
-    const query = `query{
-      blogpost(id: "${id}") {title, content}
-    }`;
-    const { body } = await request(app.getHttpServer())
-      .post('/graphql')
-      .send({
-        query: query,
-      })
-      .expect(200);
-
-    expect(body.data.blogpost).toEqual(post);
+    expect(post).toEqual(postContent);
   });
 });
