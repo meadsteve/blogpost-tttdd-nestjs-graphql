@@ -41,4 +41,25 @@ describe('InMemory Blog post storage', () => {
       expect.objectContaining(postData),
     );
   });
+
+  it('when fetching by id the fields returned can be restricted', () => {
+    const postData = {
+      title: 'first',
+      content: 'hello!',
+    };
+    const createdPost = storage.addNewPost(postData);
+    expect(storage.getPostById(createdPost.id, ['title'])).toEqual({
+      title: 'first',
+    });
+  });
+
+  it('should be able to filter all the post data for specific fields', () => {
+    storage.addNewPost({ title: 'one', content: 'content-one' });
+    storage.addNewPost({ title: 'two', content: 'content-two' });
+
+    expect(storage.getAllPosts(['content'])).toEqual([
+      { content: 'content-one' },
+      { content: 'content-two' },
+    ]);
+  });
 });
