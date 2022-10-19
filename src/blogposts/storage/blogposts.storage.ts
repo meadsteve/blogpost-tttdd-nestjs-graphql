@@ -3,19 +3,17 @@ import { BlogPost, BlogPostContent } from '../models/blogpost.model';
 import { v4 as uuidv4 } from 'uuid';
 
 type BlogPostKeys = keyof BlogPost;
-type PartialBlogPostData = {
-  [k in BlogPostKeys]?: BlogPost[k];
-};
+type PartialBlogPostData<F extends BlogPostKeys> = Pick<BlogPost, F>;
 
 export interface BlogpostStorage {
   addNewPost(post: BlogPostContent): BlogPost;
 
-  getAllPosts(fields?: BlogPostKeys[]): PartialBlogPostData[];
+  getAllPosts<F extends BlogPostKeys>(fields?: F[]): PartialBlogPostData<F>[];
 
-  getPostById(
+  getPostById<F extends BlogPostKeys>(
     id: string,
-    fields?: BlogPostKeys[],
-  ): PartialBlogPostData | undefined;
+    fields?: F[],
+  ): PartialBlogPostData<F> | undefined;
 }
 
 @Injectable()
@@ -35,14 +33,14 @@ export class InMemoryBlogpostStorage implements BlogpostStorage {
     return newPost;
   }
 
-  getAllPosts(fields: BlogPostKeys[] = []): PartialBlogPostData[] {
+  getAllPosts<F extends BlogPostKeys>(fields: F[] | undefined = undefined) {
     return this.memory.map((p) => withFilteredFields(p, fields));
   }
 
-  getPostById(
+  getPostById<F extends BlogPostKeys>(
     id: string,
-    fields: BlogPostKeys[] = [],
-  ): PartialBlogPostData | undefined {
+    fields: F[] | undefined = undefined,
+  ): PartialBlogPostData<F> | undefined {
     const matchedPost = this.memory.find((p) => p.id === id);
     if (!matchedPost) {
       return undefined;
@@ -51,14 +49,16 @@ export class InMemoryBlogpostStorage implements BlogpostStorage {
   }
 }
 
-function withFilteredFields(
+function withFilteredFields<F extends BlogPostKeys>(
   post: BlogPost,
-  fields: BlogPostKeys[],
-): PartialBlogPostData {
-  if (fields.length === 0) {
+  fields?: F[],
+): PartialBlogPostData<F> {
+  if (fields === undefined) {
     return post;
   }
-  const filtered = {};
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const filtered: Record<F, any> = {};
   fields.forEach((key) => (filtered[key] = post[key]));
   return filtered;
 }
